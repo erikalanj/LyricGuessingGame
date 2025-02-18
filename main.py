@@ -3,70 +3,84 @@ import json
 import random
 
 
+# Load lyrics from a JSON file
 def load_lyrics(file="lyrics.json"):
     with open(file, "r") as f:
         return json.load(f)
 
 
-def get_random_lyrics(lyrics):
+# Select a random lyric from the list
+def select_random_lyric(lyrics):
     return random.choice(lyrics)
 
 
-def update_band_menu():
-    # create list of random bands
-    all_bands = [
-        lyric["band"] for lyric in lyrics if lyric["band"] != current_lyric["band"]
-    ]
-    # assign 2 of those incorrect, random bands
+# Update the band dropdown with the correct band and two random incorrect bands
+def update_band_menu(lyric):
+    correct_band = lyric["band"]
+    all_bands = {
+        lyric_data["band"] for lyric_data in lyrics
+    }  # Use a set for unique bands
+    all_bands.remove(correct_band)
     random_bands = random.sample(all_bands, 2)
-    band_choices = random_bands + [current_lyric["band"]]
+    band_choices = random_bands + [correct_band]
     random.shuffle(band_choices)
-    band_var.set("Select band")
+
+    band_var.set("Select Band")
     band_menu["menu"].delete(0, "end")
+
     for band in band_choices:
         band_menu["menu"].add_command(
             label=band, command=lambda b=band: band_var.set(b)
         )
 
 
+# Handle the submission of the guess
 def submit_guess():
-    # check user input
-    user_guess = missing_word_entry.get()
-    user_band = band_var.get()
-    # correct answers from current lyric
-    correct_lyric = current_lyric["missing_lyric"]
+    user_guess = missing_word_entry.get().strip().lower()
+    selected_band = band_var.get()
+    correct_missing_word = current_lyric["missing_word"].lower()
     correct_band = current_lyric["band"]
 
-    if user_guess.lower() == correct_lyric.lower() and user_band == correct_band:
-        result_label.config(text="nice freaking job you're not a poser", fg="green")
+    if user_guess == correct_missing_word and selected_band == correct_band:
+        result_label.config(text="Nice! You got it right.", fg="green")
     else:
-        result_label.config(text="POSER!!!!!", fg="red")
+        result_label.config(
+            text=f"Wrong! The correct word was '{correct_missing_word}' and the band was '{correct_band}'.",
+            fg="red",
+        )
 
 
-update_band_menu()
-
+# Initialize game
 lyrics = load_lyrics()
-current_lyric = get_random_lyrics(lyrics)
+current_lyric = select_random_lyric(lyrics)
 
+# Initialize GUI
 root = tk.Tk()
 root.title("Lyric Guessing Game")
 
-# display lyric
-lyric_label = tk.Label(root, text=current_lyric["lyric"]).pack()
+# Display lyric
+lyric_label = tk.Label(root, text=current_lyric["lyric"])
+lyric_label.pack()
 
-# input for missing word
+# Input for missing word
 missing_word_entry = tk.Entry(root)
 missing_word_entry.pack()
 
-# band selection
+# Band selection dropdown
 band_var = tk.StringVar(value="Select Band")
-band_menu = tk.OptionMenu(root, band_var, "Queen", "Guns n Roses", "Nirvana").pack()
+band_menu = tk.OptionMenu(root, band_var, "Placeholder")  # Placeholder, will be updated
+band_menu.pack()
 
-# submit button
-tk.Button(root, text="Submit", command=submit_guess).pack()
+# Update the band menu with random bands and the correct one
+update_band_menu(current_lyric)
 
-# result display
-result_label = tk.Label(root, text="", font=("Helvetica", 12)).pack()
+# Submit button
+submit_button = tk.Button(root, text="Submit", command=submit_guess)
+submit_button.pack()
 
-print("game should start")
+# Result display
+result_label = tk.Label(root, text="", font=("Helvetica", 12))
+result_label.pack()
+
+# Start the game
 root.mainloop()
