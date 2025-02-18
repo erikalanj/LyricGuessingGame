@@ -12,6 +12,23 @@ def get_random_lyrics(lyrics):
     return random.choice(lyrics)
 
 
+def update_band_menu():
+    # create list of random bands
+    all_bands = [
+        lyric["band"] for lyric in lyrics if lyric["band"] != current_lyric["band"]
+    ]
+    # assign 2 of those incorrect, random bands
+    random_bands = random.sample(all_bands, 2)
+    band_choices = random_bands + [current_lyric["band"]]
+    random.shuffle(band_choices)
+    band_var.set("Select band")
+    band_menu["menu"].delete(0, "end")
+    for band in band_choices:
+        band_menu["menu"].add_command(
+            label=band, command=lambda b=band: band_var.set(b)
+        )
+
+
 def submit_guess():
     # check user input
     user_guess = missing_word_entry.get()
@@ -26,9 +43,10 @@ def submit_guess():
         result_label.config(text="POSER!!!!!", fg="red")
 
 
+update_band_menu()
+
 lyrics = load_lyrics()
 current_lyric = get_random_lyrics(lyrics)
-
 
 root = tk.Tk()
 root.title("Lyric Guessing Game")
