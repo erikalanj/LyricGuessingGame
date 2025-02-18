@@ -21,7 +21,8 @@ def update_band_menu(lyric):
         lyric_data["band"] for lyric_data in lyrics
     }  # Use a set for unique bands
     all_bands.remove(correct_band)
-    random_bands = random.sample(all_bands, 2)
+    all_bands = list(all_bands)  # Convert set to list for random sampling
+    random_bands = random.sample(all_bands, 2)  # Get 2 random incorrect bands
     band_choices = random_bands + [correct_band]
     random.shuffle(band_choices)
 
